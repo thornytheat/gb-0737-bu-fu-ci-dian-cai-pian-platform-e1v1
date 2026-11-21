@@ -11,6 +11,7 @@ MESSAGES = {
     "NO_COMPATIBLE_ROLL": "布种或幅宽不匹配", "ROLLS_HELD": "匹配布卷均封存",
     "SEGMENT_TOO_SHORT": "无单段可容纳该裁片", "CAPACITY_USED": "可用段已由求解方案分配",
     "STALE_RUN": "样例、刀口或规则版本已变更", "REPLAY_DIFF": "重算方案与归档不同",
+    "SHEET_UNKNOWN": "分班作业单不存在", "SHEET_STALE": "重算分班与已发布作业单不同",
     "STORE_BUSY": "归档库暂忙", "FORM_INVALID": "参数无效，检查刀口值",
 }
 

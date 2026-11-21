@@ -12,6 +12,9 @@ Kerf = Annotated[int, Query(ge=1, le=20)]
 def get_stage(request, stage, sample, kerf, run_id):
     if run_id is not None:
         document = request.app.state.archive.read(run_id)
+        if stage not in document["snapshot"]:
+            from app.modules.m8_shifts.archiving import build_sheet
+            return {"run_id": run_id, "data": build_sheet(document)}
         return {"run_id": run_id, "data": document["snapshot"][stage]}
     files = inputs(request.app.state.settings.samples, sample)
     return {"run_id": None, "data": plan_batch(files, kerf, stage)[stage]}
@@ -50,6 +53,11 @@ def ledger(request: Request, sample: str = "dirty", kerf_mm: Kerf = 5, run_id: s
 @router.get("/slips", tags=["裁床签条"])
 def slips(request: Request, sample: str = "dirty", kerf_mm: Kerf = 5, run_id: str | None = None):
     return get_stage(request, "slips", sample, kerf_mm, run_id)
+
+
+@router.get("/shifts", tags=["分班作业"])
+def shifts(request: Request, sample: str = "dirty", kerf_mm: Kerf = 5, run_id: str | None = None):
+    return get_stage(request, "shifts", sample, kerf_mm, run_id)
 
 
 @router.get("/preview", tags=["工作台"])

@@ -14,6 +14,7 @@
 | M5 换卷核算 | 确认领卷次序、实际坐标和欠料 | `GET /api/changeovers` | `app/modules/m5_changeovers/solver.py` `app/modules/m5_changeovers/placements.py` | `tests/test_changeovers.py` |
 | M6 用布勾稽 | 按卷审核切口守恒及源记录分流 | `GET /api/ledger` | `app/modules/m6_ledger/partition.py` `app/modules/m6_ledger/service.py` | `tests/test_ledger.py` |
 | M7 裁床签条 | 排版归档、同源重跑、按卷打印并下载卷宗 | `GET /api/slips` `POST /api/runs` | `app/modules/m7_slips/receipts.py` `app/modules/m7_slips/archiving.py` | `tests/test_slips.py` |
+| M8 分班作业 | 发布两班作业单、急单压一班、余料交接与版本重跑 | `GET /api/shifts` `POST /api/runs/{id}/shift-sheets` | `app/modules/m8_shifts/solver.py` `app/modules/m8_shifts/archiving.py` | `tests/test_shifts.py` `tests/test_shift_sheets.py` |
 
 ## 陷阱登记
 
@@ -33,6 +34,9 @@
 | TRAP-19 | R-001 两条带安全余量的疵区重叠 20 mm | 重复扣料或留出假缝 | 归并并集并合并源行 | `app/modules/m3_zones/intervals.py` | `tests/test_zones.py::test_overlapping_allowances_are_counted_once` |
 | TRAP-23 | R-005 的裁片和刀口刚好用尽到卷尾 | 漏计最后刀口或右端算两次 | 半开区间，最后刀口须完整容纳 | `app/modules/m5_changeovers/placements.py` | `tests/test_fit.py::test_kerf_exact_fit_succeeds_when_right_edge_is_exclusive` |
 | TRAP-26 | 已归档后改变源记录文件 | 陈旧重跑覆盖原裁片坐标 | 比较文件哈希及规则身份，返回 409 | `app/modules/m7_slips/archiving.py` | `tests/test_slips.py::test_stale_source_replay_is_rejected_without_rewriting_archive` |
+| TRAP-27 | 按一个全局序号前缀切两班 | 全片压进一班，二班空转 | 逐卷枚举刀口切分，两班都有活且急单压一班 | `app/modules/m8_shifts/solver.py` | `tests/test_shifts.py::test_split_prefers_whole_rolls_over_naive_prefix_cut` |
+| TRAP-28 | 禁切区两侧的裁片之间没有共用刀口 | 在段边界分班截断可用段 | 段边界候选剔除，整卷归一班，跨班只沿同段刀口 | `app/modules/m8_shifts/solver.py` | `tests/test_shifts.py::test_roll_with_only_a_blocked_gap_between_pieces_is_not_split` |
+| TRAP-29 | 同一作业重复发布或并发提交 | 新增另一套裁片、作业单版本虚增 | 内容哈希幂等复用，事务内发布，失败回滚保留旧版 | `app/modules/m8_shifts/archiving.py` | `tests/test_shift_sheets.py::test_rerun_same_job_does_not_add_another_set_of_pieces` |
 
 ## 勾稽与局限
 

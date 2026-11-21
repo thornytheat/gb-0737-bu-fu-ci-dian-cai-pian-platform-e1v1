@@ -27,7 +27,7 @@ function notice(text = "", failed = false) {
 function archiveControls() {
   const manifest = state.document?.manifest;
   const archived = manifest?.sample === sample.value && manifest?.kerf_mm === Number(kerf.value);
-  for (const control of [sample, kerf, at("submit")]) control.disabled = state.busy;
+  for (const control of [sample, kerf, at("submit"), at("release-sheet")]) control.disabled = state.busy || !manifest;
   at("rerun").disabled = !archived || state.busy;
   at("print").disabled = !archived || state.busy || !state.roll;
   if (archived && !state.busy) exportLink.href = `/api/export/${manifest.id}`;
@@ -145,6 +145,15 @@ at("rerun").addEventListener("click", () => action(async () => {
   const id = state.document.manifest.id;
   await fetchData(`/api/runs/${id}/rerun`, "POST");
   notice("重算与归档一致");
+}));
+at("release-sheet").addEventListener("click", () => action(async () => {
+  const id = state.document.manifest.id;
+  const outcome = await fetchData(`/api/runs/${id}/shift-sheets`, "POST");
+  const sheetReply = await fetchData(`/api/runs/${id}/shift-sheets/active`);
+  const run = await fetchData(`/api/runs/${id}`);
+  if (sheetReply.document) run.snapshot.shifts = sheetReply.document.sheet;
+  setRun(run);
+  notice(outcome.reused ? "分班作业单已存在，沿用旧版" : "分班作业单已发布");
 }));
 at("print").addEventListener("click", () => window.print());
 for (const button of navigation) button.addEventListener("click", () => {

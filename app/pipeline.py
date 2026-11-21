@@ -5,6 +5,7 @@ from app.modules.m4_fit.service import fit
 from app.modules.m5_changeovers.service import changeovers
 from app.modules.m6_ledger.service import ledger
 from app.modules.m7_slips.receipts import receipts
+from app.modules.m8_shifts.service import shifts
 
 
 def plan_batch(sources, kerf, stop=None):
@@ -29,4 +30,7 @@ def plan_batch(sources, kerf, stop=None):
     if stop == "ledger":
         return result
     result["slips"] = receipts(union["rolls"], planning, books)
+    if stop == "slips":
+        return result
+    result["shifts"] = shifts(union["rolls"], fit_result, planning)
     return result

@@ -26,7 +26,7 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 18426
 
 ## 模块与验证
 
-模块接口为 `GET /api/intake`、`/api/locate`、`/api/zones`、`/api/fit`、`/api/changeovers`、`/api/ledger`、`/api/slips`。模块都能用 `sample=dirty` 或 `sample=clean` 单独试算，支持 `kerf_mm` 及归档 `run_id`。`POST /api/runs` 归档，`POST /api/runs/{id}/rerun` 重算核验，`GET /api/export/{id}` 独立下载。接口文档在 `/docs`。
+模块接口为 `GET /api/intake`、`/api/locate`、`/api/zones`、`/api/fit`、`/api/changeovers`、`/api/ledger`、`/api/slips`、`/api/shifts`。模块都能用 `sample=dirty` 或 `sample=clean` 单独试算，支持 `kerf_mm` 及归档 `run_id`。`POST /api/runs` 归档，`POST /api/runs/{id}/rerun` 重算核验，`GET /api/export/{id}` 独立下载。归档后用 `POST /api/runs/{id}/shift-sheets` 发布两班分班作业单，`POST /api/shift-sheets/{id}/rerun` 核验分班，接口文档在 `/docs`。
 
 详情见 [数据字典](docs/DATA-DICTIONARY.md) 和 [深度登记](docs/DEPTH.md)。项目采用有界一维配长，超过规划上限时需拆分工单。
 

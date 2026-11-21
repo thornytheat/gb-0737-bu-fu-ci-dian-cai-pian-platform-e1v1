@@ -64,6 +64,32 @@ export function views(stage, data, activeRoll, history) {
       ["归档历史", history, [column("批次号", (r) => ({text: r.id.slice(0, 12), run: r.id})), column("验布单", (r) => r.inputs.defects.file),
         column("刀口 mm", (r) => r.kerf_mm, true), column("片数", (r) => r.piece_count, true), column("归档 UTC", (r) => r.created_at)]],
     ];
+    case "shifts": {
+      const sheet = data?.shifts;
+      const shiftRows = sheet?.shifts.map((shift) => ({
+        ...shift,
+        rolls_text: list(shift.rolls),
+        first_cut: shift.first_cut_mm === null ? "—" : `${shift.first_roll} ${shift.first_piece} 自 ${shift.first_cut_mm} mm 开刀`,
+      })) ?? [];
+      const pieceRows = sheet?.shifts.flatMap((shift) => shift.pieces.map((piece) => ({...piece, shift_label: shift.label}))) ?? [];
+      const handoffRows = sheet?.handoffs ?? [];
+      const cutRows = sheet?.roll_cuts ?? [];
+      return [
+        ["分班总览", shiftRows, [column("班次", (r) => r.label), column("领卷顺序", (r) => r.rolls_text),
+          column("换卷次数", (r) => r.roll_changes, true), column("裁片数", (r) => r.piece_count, true),
+          column("其中急单", (r) => r.urgent_pieces, true), column("开刀位置", (r) => r.first_cut)]],
+        ["班次裁片", pieceRows, [column("班次", (r) => r.shift_label), column("卷号", (r) => r.roll),
+          column("裁片", (r) => r.id), column("起点 mm", (r) => r.start, true), column("终点 mm", (r) => r.end, true),
+          column("刀口终点 mm", (r) => r.kerf_end, true), column("订单", (r) => r.order), column("急单", (r) => r.urgent ? "急" : "常")]],
+        ["卷内切分", cutRows, [column("卷号", (r) => r.roll), column("一班裁片数", (r) => r.shift_one_pieces, true),
+          column("总片数", (r) => r.total_pieces, true), column("是否跨班", (r) => r.split ? "是" : "否"),
+          column("二班接手片数", (r) => r.total_pieces - r.shift_one_pieces, true)]],
+        ["余料交接", handoffRows, [column("卷号", (r) => r.roll), column("交接刀口 mm", (r) => r.handoff_mm, true),
+          column("所在可用段 mm", (r) => interval([r.segment_start, r.segment_end])),
+          column("一班收刀", (r) => r.shift_one_ends), column("二班起刀", (r) => r.shift_two_starts),
+          column("卷内余料 mm", (r) => r.remaining_mm, true)]],
+      ];
+    }
     default: throw new Error("模块不存在");
   }
 }
